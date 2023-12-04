@@ -1,100 +1,131 @@
-#include <FS.h>
-#include <ESPmDNS.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 #include <Wire.h>
-//#include <Adafruit_BME280.h>
-#include <Adafruit_BMP280.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <ESPmDNS.h>
+
 #include <LittleFS.h>
+// Replace with your network credentials
+/*
+const char *ssid = "meteostation";
+const char *password = "meteostation";
+*/
 
-// Remplacez ces valeurs par les vôtres
-const char *ssid = "Esp32";
-const char *password = "Laplateforme.io";
-const char* host = "espmeteo";
+  AsyncWebServer server(80);
 
-Adafruit_BMP280 bmp; // use I2C interface
+// Nom d'hôte pour mDNS
+const char *hostname = "meteo";
 
-Adafruit_Sensor *bmp_temp = bmp.getTemperatureSensor();
-Adafruit_Sensor *bmp_pressure = bmp.getPressureSensor();
-//Adafruit_BME280 bme;
-AsyncWebServer server(80);
+const char *ssid = "Xcam";
+const char *password = "laplateforme.io";
+// Create an instance of the BME280 sensor
+Adafruit_BME280 sensor;
+#define I2CAddr 0x76
+
+void onRequestBody(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+  // Gérer le corps de la requête ici si nécessaire
+}
+
+// Initialise LittleFS
+void initLittleFS() {
+  Serial.println("Initialisation de LittleFS...");
+  if (!LittleFS.begin()) {
+    Serial.println("Erreur lors de l'initialisation de LittleFS");
+    while (true);
+  }
+
+  Serial.println("LittleFS initialisé !");
+}
+
+
+
+
 
 void setup() {
+  unsigned status;
   Serial.begin(9600);
- unsigned status;
-  //status = bmp.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID);
-  status = bmp.begin(0x76);
-  if (!status) {
-    Serial.println(F("Could not find a valid BME280 sensor, check wiring or "
-                      "try a different address!"));
-    Serial.print("SensorID was: 0x"); Serial.println(bmp.sensorID(),16);
-    Serial.print("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n");
-    Serial.print("   ID of 0x56-0x58 represents a BMP 280,\n");
-    Serial.print("        ID of 0x60 represents a BME 280.\n");
-    Serial.print("        ID of 0x61 represents a BME 680.\n");
-    while (1) delay(10);
-  }
-  /* Default settings from datasheet. */
-  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
-  bmp_temp->printSensorDetails();
-  // Montage du système de fichiers LittleFS
-  if (!LittleFS.begin()) {
-    Serial.println("LittleFS mount failed");
-    return;
-  }
-
-  // Configurer le point d'accès WiFi 
-  
+  // Set up the ESP32 as an access point
+/*
   WiFi.softAP(ssid, password);
 
-  if (!MDNS.begin(host))  // http://ESP32OTA.local
-    Serial.println("Error setting up MDNS responder!");   
-  else
-    Serial.printf("mDNS responder started. Hotstname = http://%s.local\n", host);
+  Serial.println("Access Point Started");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.softAPIP());
+*/
 
-  // Configurer les routes du serveur Web
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    // Lire le contenu de la page Web depuis LittleFS
-    File file = LittleFS.open("/index.html", "r");
-    if (file) {
-      request->send(LittleFS, "/index.html", "text/html");
-      file.close();
-    } else {
-      request->send(404, "text/plain", "File not found");
-    }
+// Connectez-vous au réseau Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connexion au WiFi...");
   }
-  );
+  Serial.println("Connecté au WiFi");
 
-  // Configurer une route pour obtenir les données du capteur
+  // Initialisez mDNS
+  if (!MDNS.begin(hostname)) {
+    Serial.println("Échec de l'initialisation mDNS");
+    return;
+  }
+  Serial.println("mDNS initialisé");
+
+ initLittleFS();
+//////////////
+
+
+
+  // Initialize the BME280 sensor
+     status = sensor.begin(I2CAddr);
+    if (!status) {
+        Serial.println("Pas de capteur trouvé !");
+        Serial.print("SensorID : 0x"); Serial.println(sensor.sensorID(),16);
+        Serial.print("        ID of 0xFF mauvaise addresse, BMP 180 ou BMP 085\n");
+        Serial.print("   ID of 0x56-0x58 BMP 280 ?,\n");
+        Serial.print("        ID of 0x60 BME 280 ?\n");
+        Serial.print("        ID of 0x61 BME 680 ?\n");
+        #ifdef OLED 
+        // display.setCursor(0,0);
+        if ( SCREEN_HEIGHT == 64 ){
+          display.setCursor(0,32);
+        }
+          display.print("Pas de capteur !\n");
+          display.print("SensorID :");
+          display.print(sensor.sensorID(),16);
+          display.display();
+        #endif
+        while (1) delay(10);
+    }
+
+ Serial.println("Initialisation du serveur web...");
+// Chargement des fichiers html et javascript
+  server.on("/",                    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
+  server.on("/index3.html",         HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
+  //server.on("/favicon.ico" ,        HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/favicon.ico", "image/x-icon");  });
+  server.on("/raphael.min.js",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/raphael.min.js", "application/javascript");  });
+  server.on("/justgage.js",         HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/justgage.js", "application/javascript");  });
+  server.on("/jquery-3.6.4.min.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/jquery-3.6.4.min.js", "application/javascript");  });
+  // Serve the sensor data as JSON
   server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
-    // Mesurer la température, l'humidité et la pression atmosphérique
- sensors_event_t temp_event, pressure_event;
-bmp_temp->getEvent(&temp_event);
-  bmp_pressure->getEvent(&pressure_event);
-    float temperature =temp_event.temperature; //21.5; // bme.readTemperature();
-    float humidity = 0;     //bme.readHumidity();
-    float pressure = pressure_event.pressure; //800.1;   //bme.readPressure() / 100.0F; // Conversion en hPa
+    String temperature = String(sensor.readTemperature());
+    String pressure = String(sensor.readPressure() / 100.0F);
+    String humidity = String(sensor.readHumidity());
+    String data = "{\"temperature\":" + temperature + ",\"pressure\":" + pressure + ",\"humidity\":" + humidity + "}";
+    request->send(200, "application/json", data);
+    Serial.println(data);
+    });
 
-    // Construire la réponse JSON
-    String json = "{\"temperature\": " + String(temperature) +
-                  ", \"humidity\": " + String(humidity) +
-                  ", \"pressure\": " + String(pressure) + "}";
-
-    // Envoyer la réponse JSON
-    request->send(200, "application/json", json);
-  });
-
-  // Démarrer le serveur Web
+  
+  // Activer la compression Gzip
+  server.onRequestBody(onRequestBody);  
+  // Démarre le serveur web
   server.begin();
+  Serial.println("Serveur web démarré !");
+
+  
 }
 
 void loop() {
-  // Rien à faire dans la boucle loop si vous utilisez le serveur Web Async
+  // Nothing to do here
 }
 
