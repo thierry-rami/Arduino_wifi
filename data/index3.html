@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesures</title>
+  <!-- Inclure Chart.js depuis un CDN -->
+  <script src="/chart.js"></script>
+  <style>
+    body {
+      text-align: center;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    @media (min-width: 600px) {
+      canvas {
+        width: 33.33%;
+        float: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Mesures</h1>
+    <canvas id="temperatureChart" width="400" height="200"></canvas>
+    <canvas id="humiditeChart" width="400" height="200"></canvas>
+    <canvas id="pressionChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    function updateChartData(chart, newData) {
+      if (!chart.data.datasets) {
+        chart.data.datasets = [{ data: [] }];
+      }
+      chart.data.datasets[0].data = newData;
+      chart.update();
+    }
+
+    function fetchData(url, callback) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => callback(data))
+        .catch(error => console.error('Erreur de récupération des données:', error));
+    }
+
+    var options = {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    };
+
+    var temperatureChart = new Chart(document.getElementById('temperatureChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Température'],
+        datasets: [{ data: [] }]
+      },
+      options: options
+    });
+
+    var humiditeChart = new Chart(document.getElementById('humiditeChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Humidité'],
+        datasets: [{ data: [] }]
+      },
+      options: options
+    });
+
+    var pressionChart = new Chart(document.getElementById('pressionChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Pression'],
+        datasets: [{ data: [] }]
+      },
+      options: options
+    });
+
+    function updateData() {
+      var apiUrl = '/data';
+
+      fetchData(apiUrl, function(data) {
+        console.log('Données récupérées:', data);
+
+        var newTemperatureData = [data.temperature];
+        var newHumiditeData = [data.humidite];
+        var newPressionData = [data.pressure];
+
+        console.log('Nouvelles données de température:', newTemperatureData);
+        console.log('Nouvelles données d\'humidité:', newHumiditeData);
+        console.log('Nouvelles données de pression:', newPressionData);
+
+        updateChartData(temperatureChart, newTemperatureData);
+        updateChartData(humiditeChart, newHumiditeData);
+        updateChartData(pressionChart, newPressionData);
+      });
+    }
+
+    setInterval(updateData, 30000);
+  </script>
+</body>
+</html>

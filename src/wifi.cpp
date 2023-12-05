@@ -4,8 +4,9 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
-
 #include <LittleFS.h>
+
+#define LED_BUILTIN 2
 // Replace with your network credentials
 /*
 const char *ssid = "meteostation";
@@ -45,7 +46,8 @@ void initLittleFS() {
 void setup() {
   unsigned status;
   Serial.begin(9600);
-
+  pinMode(LED_BUILTIN, OUTPUT); // led off
+  digitalWrite(LED_BUILTIN, LOW);
   // Set up the ESP32 as an access point
 /*
   WiFi.softAP(ssid, password);
@@ -98,13 +100,28 @@ void setup() {
     }
 
  Serial.println("Initialisation du serveur web...");
-// Chargement des fichiers html et javascript
-  server.on("/",                    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
-  server.on("/index3.html",         HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
-  //server.on("/favicon.ico" ,        HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/favicon.ico", "image/x-icon");  });
-  server.on("/raphael.min.js",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/raphael.min.js", "application/javascript");  });
-  server.on("/justgage.js",         HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/justgage.js", "application/javascript");  });
-  server.on("/jquery-3.6.4.min.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/jquery-3.6.4.min.js", "application/javascript");  });
+// Chargement des fichiers html / javascript / css / ico
+  server.on("/",               HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
+  server.on("/simple.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/simple.html", "text/html");  });
+  server.on("/index2.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index2.html", "text/html");  });
+  server.on("/index3.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
+  server.on("/style.css",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
+  server.on("/favicon.ico" ,   HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/favicon.ico", "image/x-icon");  });
+  server.on("/404.png" ,       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.png", "image/png");  });
+  server.on("/raphael.min.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/raphael.min.js", "application/javascript");  });
+  server.on("/justgage.js",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/justgage.js", "application/javascript");  });
+  server.on("/chart.js",       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/chart.js", "application/javascript");  });
+
+  server.onNotFound(                     [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.html", "text/html");  });
+
+
+/*
+server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWebServerResponse *response = request->beginResponse(LittleFS, "/index3.html");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
+  });
+  */
+  
   // Serve the sensor data as JSON
   server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
     String temperature = String(sensor.readTemperature());
@@ -121,7 +138,7 @@ void setup() {
   // Démarre le serveur web
   server.begin();
   Serial.println("Serveur web démarré !");
-
+  digitalWrite(LED_BUILTIN, HIGH) ; // si ok on allume led integré
   
 }
 

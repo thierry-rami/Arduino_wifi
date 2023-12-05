@@ -1,110 +1,118 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESP32 BME280 </title>
+  <title>ESP32 Weather Station</title>
 
-  <!-- Inclure les fichiers JavaScript nécessaires -->
+  <!-- Inclure les fichiers CSS nécessaires ici -->
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- Inclure la bibliothèque JustGage -->
   <script src="/raphael.min.js"></script>
   <script src="/justgage.js"></script>
 
-  <style>
-    /* Ajoutez du style CSS personnalisé ici si nécessaire */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      text-align: center;
-    }
-
-    .gauge-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .gauge {
-      margin-bottom: 20px;
-    }
-  </style>
 </head>
 <body>
 
-  <h1>ESP32 BME280</h1>
-
-  <div class="gauge-container">
-    <div class="gauge" id="temperature-gauge"></div>
-    <div class="gauge" id="humidity-gauge"></div>
-    <div class="gauge" id="pressure-gauge"></div>
-  </div>
+  <!-- Conteneurs pour les jauges -->
+  <div id="temperature-gauge"></div>
+  <div id="humidity-gauge"></div>
+  <div id="pressure-gauge"></div>
 
   <script>
-    // Créez un objet pour stocker les instances des jauges
-    var gauges = {
-      temperature: null,
-      humidity: null,
-      pressure: null
-    };
+    // Initialiser les objets de jauge
+    var gauges = {};
+
+    // Fonction pour mettre à jour une jauge graphique avec une aiguille et un libellé
+    function updateGauge(containerId, label, value, unit, gaugeName, minRange, maxRange) {
+      console.log('Updating gauge:', containerId, label, value, unit, gaugeName);
+
+      // Arrondir la valeur à deux chiffres après la virgule
+      value = Math.round(value * 100) / 100;
+
+      // Si la jauge n'existe pas encore, créez une nouvelle instance
+      if (!gauges[gaugeName]) {
+        gauges[gaugeName] = new JustGage({
+          id: containerId,
+          value: value,
+          min: minRange,  // Utilisez la plage minimale spécifiée
+          max: maxRange,  // Utilisez la plage maximale spécifiée
+          title: label,
+          label: unit,
+          gaugeWidthScale: 0.6,
+          counter: true,
+          formatNumber: true,
+          customSectors: [{
+            color: "#FF0000",
+            lo: minRange,
+            hi: minRange + ((maxRange - minRange) * 0.2)  // Par exemple, 20% de la plage
+          }, {
+            color: "#FFFF00",
+            lo: minRange + ((maxRange - minRange) * 0.2),
+            hi: minRange + ((maxRange - minRange) * 0.8)  // Par exemple, 80% de la plage
+          }, {
+            color: "#00FF00",
+            lo: minRange + ((maxRange - minRange) * 0.8),
+            hi: maxRange
+          }],
+          // Ajouter la configuration de l'aiguille
+          pointer: {
+            length: "80%",  // Longueur de l'aiguille (80% de la jauge)
+            strokeWidth: 8,  // Épaisseur de l'aiguille
+            color: "#000000",  // Couleur de l'aiguille
+            start: 0.5  // Point de départ de l'aiguille (centre de la jauge)
+          },
+          // Ajouter la configuration du libellé
+          label: label
+        });
+      } else {
+        // Mettez à jour la valeur de la jauge existante
+        gauges[gaugeName].refresh(value);
+
+        // Mettez à jour le titre et le label avec l'unité
+        gauges[gaugeName].config.title = label;
+        gauges[gaugeName].config.label = unit;
+
+        // Mettez à jour la plage minimale et maximale
+        gauges[gaugeName].config.min = minRange;
+        gauges[gaugeName].config.max = maxRange;
+
+        // Mettez à jour la position de l'aiguille
+        gauges[gaugeName].config.pointer = {
+          length: "80%",
+          strokeWidth: 8,
+          color: "#000000",
+          start: 0.5
+        };
+
+        // Mettez à jour le libellé
+        gauges[gaugeName].config.label = label;
+
+        gauges[gaugeName].render();
+      }
+
+      console.log('Gauge updated successfully!');
+    }
 
     // Fonction pour récupérer les données du capteur
     function fetchData() {
-      console.log('Fetching data...');
       fetch('/data')
         .then(response => response.json())
         .then(data => {
-          console.log('Data received:', data);
-          updateGauge('temperature-gauge', 'Temperature', data.temperature, '°C', 'temperature');
-          updateGauge('humidity-gauge', 'Humidity', data.humidity, '%', 'humidity');
-          updateGauge('pressure-gauge', 'Pressure', data.pressure, 'hPa', 'pressure');
+        updateGauge('temperature-gauge', 'Temperature', data.temperature, '°C', 'temperature', 10, 40);
+        updateGauge('humidity-gauge', 'Humidity', data.humidity, '%', 'humidity', 30, 80);
+        updateGauge('pressure-gauge', 'Pressure', data.pressure, 'hPa', 'pressure', 800, 1200);
         })
         .catch(error => console.error('Erreur de récupération des données:', error));
     }
-
-// Fonction pour mettre à jour une jauge graphique
-function updateGauge(containerId, label, value, unit, gaugeName) {
-  console.log('Updating gauge:', containerId, label, value, unit, gaugeName);
-
-  // Si la jauge n'existe pas encore, créez une nouvelle instance
-  if (!gauges[gaugeName]) {
-    gauges[gaugeName] = new JustGage({
-      id: containerId,
-      value: parseFloat(value.toFixed(2)), // Conversion avec deux chiffres après la virgule
-      min: 0,
-      max: 100,
-      title: label,
-      label: unit,
-      gaugeWidthScale: 0.6,
-      counter: true,
-      formatNumber: true,
-      customSectors: [{
-        color: "#FF0000",
-        lo: 0,
-        hi: 20
-      }, {
-        color: "#FFFF00",
-        lo: 20,
-        hi: 80
-      }, {
-        color: "#00FF00",
-        lo: 80,
-        hi: 100
-      }]
-    });
-  } else {
-    // Mettez à jour la valeur de la jauge existante avec deux chiffres après la virgule
-    gauges[gaugeName].refresh(parseFloat(value.toFixed(2)));
-    
  
-  console.log('Gauge updated successfully!');
-}
 
-    // Mettez à jour les jauges toutes les 10 secondes
-    setInterval(fetchData, 10000);  // 10,000 millisecondes équivalent à 10 secondes
+    // Appeler la fonction updateGauges à intervalle régulier
+    setInterval(fetchData, 10000);  // Mettre à jour toutes les 10 secondes
 
-    // Mettez à jour les jauges une fois au démarrage
+    // Appeler la fonction updateGauges immédiatement lors du chargement de la page
     fetchData();
-  }
   </script>
 
 </body>
