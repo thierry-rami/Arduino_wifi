@@ -4,11 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mesures</title>
+  <!-- Inclure Highcharts depuis un CDN -->
   <script src="/highcharts.js"></script>
   <script src="/accessibility.js"></script>
-  <link rel="stylesheet" type="text/css" href="/style3.css">
+  <style>
+    body {
+      text-align: center;
+    }
 
+    .chart-container {
+      max-width: 100%;
+      height: auto;
+    }
 
+    @media (min-width: 600px) {
+      .chart-container {
+        width: 33.33%;
+        float: left;
+      }
+    }
+  </style>
 </head>
 <body>
   <h1>Mesures</h1>
@@ -90,22 +105,7 @@
         console.log('Déclenchement de la mise à jour des données');
         updateData();
       }, 30000);
-
-      // Détecter le type d'appareil
-      detectDeviceType();
     });
-
-    // Fonction pour détecter le type d'appareil
-    function detectDeviceType() {
-      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        console.log('Cet appareil est un mobile.');
-        // Ajoutez ici le code spécifique pour les appareils mobiles si nécessaire
-      } else {
-        console.log('Cet appareil est un autre type.');
-        // Ajoutez ici le code spécifique pour les autres types d'appareils si nécessaire
-      }
-    }
   </script>
 </body>
 </html>

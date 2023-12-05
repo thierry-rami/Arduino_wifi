@@ -101,17 +101,19 @@ void setup() {
 
  Serial.println("Initialisation du serveur web...");
 // Chargement des fichiers html / javascript / css / ico
-  server.on("/",               HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
-  server.on("/simple.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/simple.html", "text/html");  });
-  server.on("/index2.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index2.html", "text/html");  });
-  server.on("/index3.html",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
-  server.on("/style.css",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
-  server.on("/favicon.ico" ,   HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/favicon.ico", "image/x-icon");  });
-  server.on("/404.png" ,       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.png", "image/png");  });
-  server.on("/raphael.min.js", HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/raphael.min.js", "application/javascript");  });
-  server.on("/justgage.js",    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/justgage.js", "application/javascript");  });
-  server.on("/chart.js",       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/chart.js", "application/javascript");  });
-
+  server.on("/",                HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
+  server.on("/simple.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/simple.html", "text/html");  });
+  server.on("/index2.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index2.html", "text/html");  });
+  server.on("/index3.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
+  server.on("/style.css",       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
+  server.on("/favicon.ico" ,    HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/favicon.ico", "image/x-icon");  });
+  server.on("/404.png" ,        HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.png", "image/png");  });
+  server.on("/raphael.min.js",  HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/raphael.min.js", "application/javascript");  });
+  server.on("/justgage.js",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/justgage.js", "application/javascript");  });
+  server.on("/chart.js",        HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/chart.js", "application/javascript");  });
+  server.on("/highcharts.js",   HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/highcharts.js", "application/javascript");  });
+  server.on("/accessibility.js",HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/accessibility.js", "application/javascript");  });
+  server.on("/style3.css",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
   server.onNotFound(                     [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.html", "text/html");  });
 
 
