@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesures</title>
+  <script src="/highcharts.js"></script>
+  <script src="/accessibility.js"></script>
+  <link rel="stylesheet" type="text/css" href="/style3.css">
+
+
+</head>
+<body>
+  <h1>Mesures</h1>
+
+  <div id="temperatureChart" class="chart-container"></div>
+  <div id="humidityChart" class="chart-container"></div>
+  <div id="pressionChart" class="chart-container"></div>
+
+  <script>
+    // Fonction pour créer un graphique avec Highcharts
+    function createHighchartsChart(elementId, title, color) {
+      console.log(`Création du graphique ${title}`);
+      return Highcharts.chart(elementId, {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: title
+        },
+        xAxis: {
+          categories: ['Mesure']
+        },
+        yAxis: {
+          title: {
+            text: title
+          }
+        },
+        series: [{
+          name: title,
+          data: [],
+          color: color
+        }]
+      });
+    }
+
+    // Fonction pour mettre à jour les données du graphique avec Highcharts
+    function updateHighchartsChart(chart, newData) {
+      console.log(`Mise à jour du graphique ${chart.title.textStr}`);
+      chart.series[0].setData(newData, true);
+    }
+
+    // Fonction pour récupérer les données du capteur
+    function fetchData(url, callback) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => callback(data))
+        .catch(error => console.error('Erreur de récupération des données:', error));
+    }
+
+    var temperatureChart, humidityChart, pressionChart;
+
+    function updateData() {
+      var apiUrl = '/data';
+
+      fetchData(apiUrl, function(data) {
+        console.log('Données récupérées:', data);
+
+        var newTemperatureData = [data.temperature];
+        var newHumidityData = [data.humidity];
+        var newPressionData = [data.pressure];
+
+        console.log('Mise à jour des graphiques avec les nouvelles données');
+        updateHighchartsChart(temperatureChart, newTemperatureData);
+        updateHighchartsChart(humidityChart, newHumidityData);
+        updateHighchartsChart(pressionChart, newPressionData);
+      });
+    }
+
+    // Créer les graphiques avec Highcharts au chargement de la page
+    window.addEventListener('load', function() {
+      console.log('Chargement de la page');
+
+      temperatureChart = createHighchartsChart('temperatureChart', 'Température', '#FF0000'); // Rouge
+      humidityChart = createHighchartsChart('humidityChart', 'Humidité', '#00FF00'); // Vert
+      pressionChart = createHighchartsChart('pressionChart', 'Pression', '#0000FF'); // Bleu
+
+      // Mettre à jour les données toutes les 30 secondes
+      setInterval(function() {
+        console.log('Déclenchement de la mise à jour des données');
+        updateData();
+      }, 30000);
+
+      // Détecter le type d'appareil
+      detectDeviceType();
+    });
+
+    // Fonction pour détecter le type d'appareil
+    function detectDeviceType() {
+      var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        console.log('Cet appareil est un mobile.');
+        // Ajoutez ici le code spécifique pour les appareils mobiles si nécessaire
+      } else {
+        console.log('Cet appareil est un autre type.');
+        // Ajoutez ici le code spécifique pour les autres types d'appareils si nécessaire
+      }
+    }
+  </script>
+</body>
+</html>

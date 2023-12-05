@@ -8,18 +8,19 @@
 
 #define LED_BUILTIN 2
 // Replace with your network credentials
-/*
+
 const char *ssid = "meteostation";
 const char *password = "meteostation";
-*/
+
 
   AsyncWebServer server(80);
 
 // Nom d'hôte pour mDNS
-const char *hostname = "meteo";
-
+const char *hostname = "meteoesp32";
+/*
 const char *ssid = "Xcam";
 const char *password = "laplateforme.io";
+*/
 // Create an instance of the BME280 sensor
 Adafruit_BME280 sensor;
 #define I2CAddr 0x76
@@ -48,15 +49,16 @@ void setup() {
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT); // led off
   digitalWrite(LED_BUILTIN, LOW);
+
   // Set up the ESP32 as an access point
-/*
+
   WiFi.softAP(ssid, password);
 
   Serial.println("Access Point Started");
   Serial.print("IP Address: ");
   Serial.println(WiFi.softAPIP());
-*/
 
+/*
 // Connectez-vous au réseau Wi-Fi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -64,7 +66,7 @@ void setup() {
     Serial.println("Connexion au WiFi...");
   }
   Serial.println("Connecté au WiFi");
-
+*/
   // Initialisez mDNS
   if (!MDNS.begin(hostname)) {
     Serial.println("Échec de l'initialisation mDNS");
