@@ -15,8 +15,7 @@ const char *password = "meteostation";
 
   AsyncWebServer server(80);
 
-// Nom d'hôte pour mDNS
-const char *hostname = "meteoesp32";
+const char *hostname = "meteoesp32"; // Nom d'hôte pour mDNS
 /*
 const char *ssid = "Xcam";
 const char *password = "laplateforme.io";
@@ -40,20 +39,13 @@ void initLittleFS() {
   Serial.println("LittleFS initialisé !");
 }
 
-
-
-
-
 void setup() {
   unsigned status;
   Serial.begin(9600);
-  pinMode(LED_BUILTIN, OUTPUT); // led off
-  digitalWrite(LED_BUILTIN, LOW);
+  pinMode(LED_BUILTIN, OUTPUT); digitalWrite(LED_BUILTIN, LOW);// led bleu OFF
 
-  // Set up the ESP32 as an access point
-
+  //ESP32 en mode "access point"
   WiFi.softAP(ssid, password);
-
   Serial.println("Access Point Started");
   Serial.print("IP Address: ");
   Serial.println(WiFi.softAPIP());

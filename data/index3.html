@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,8 @@
   <script src="/highcharts.js"></script>
   <script src="/accessibility.js"></script>
   <link rel="stylesheet" type="text/css" href="/style3.css">
-
-
 </head>
+
 <body>
   <h1>Mesures</h1>
 
@@ -85,6 +85,9 @@
       humidityChart = createHighchartsChart('humidityChart', 'Humidité', '#00FF00'); // Vert
       pressionChart = createHighchartsChart('pressionChart', 'Pression', '#0000FF'); // Bleu
 
+      // Mise à jour des données dès le chargement de la page
+      updateData();
+
       // Mettre à jour les données toutes les 30 secondes
       setInterval(function() {
         console.log('Déclenchement de la mise à jour des données');
@@ -108,4 +111,5 @@
     }
   </script>
 </body>
+
 </html>
