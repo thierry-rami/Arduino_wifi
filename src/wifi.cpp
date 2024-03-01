@@ -113,7 +113,7 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
     //Serial.println(data);
     });
   
-  // Act        #ifdef OLED 
+        #ifdef OLED 
         // display.setCursor(0,0);
         if ( SCREEN_HEIGHT == 64 ){
           display.setCursor(0,32);
@@ -123,7 +123,7 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
           display.print(sensor.sensorID(),16);
           display.display();
         #endif
-iver la compression Gzip
+// Activer la compression Gzip
   server.onRequestBody(onRequestBody);  
   // Démarre le serveur web
   server.begin();
