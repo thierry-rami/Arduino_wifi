@@ -8,18 +8,17 @@
 
 #define LED_BUILTIN 2
 // Replace with your network credentials
-
+/*
 const char *ssid = "meteostation";
 const char *password = "meteostation";
-
-
-  AsyncWebServer server(80);
+*/
+AsyncWebServer server(80);
 
 const char *hostname = "meteoesp32"; // Nom d'hôte pour mDNS
-/*
+///*
 const char *ssid = "Xcam";
 const char *password = "laplateforme.io";
-*/
+//*/
 // Create an instance of the BME280 sensor
 Adafruit_BME280 sensor;
 #define I2CAddr 0x76
@@ -35,7 +34,6 @@ void initLittleFS() {
     Serial.println("Erreur lors de l'initialisation de LittleFS");
     while (true);
   }
-
   Serial.println("LittleFS initialisé !");
 }
 
@@ -43,14 +41,14 @@ void setup() {
   unsigned status;
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT); digitalWrite(LED_BUILTIN, LOW);// led bleu OFF
-
+/*
   //ESP32 en mode "access point"
   WiFi.softAP(ssid, password);
   Serial.println("Access Point Started");
   Serial.print("IP Address: ");
   Serial.println(WiFi.softAPIP());
-
-/*
+*/
+///*
 // Connectez-vous au réseau Wi-Fi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -58,7 +56,7 @@ void setup() {
     Serial.println("Connexion au WiFi...");
   }
   Serial.println("Connecté au WiFi");
-*/
+//*/
   // Initialisez mDNS
   if (!MDNS.begin(hostname)) {
     Serial.println("Échec de l'initialisation mDNS");
@@ -68,9 +66,6 @@ void setup() {
 
  initLittleFS();
 //////////////
-
-
-
   // Initialize the BME280 sensor
      status = sensor.begin(I2CAddr);
     if (!status) {
@@ -80,22 +75,13 @@ void setup() {
         Serial.print("   ID of 0x56-0x58 BMP 280 ?,\n");
         Serial.print("        ID of 0x60 BME 280 ?\n");
         Serial.print("        ID of 0x61 BME 680 ?\n");
-        #ifdef OLED 
-        // display.setCursor(0,0);
-        if ( SCREEN_HEIGHT == 64 ){
-          display.setCursor(0,32);
-        }
-          display.print("Pas de capteur !\n");
-          display.print("SensorID :");
-          display.print(sensor.sensorID(),16);
-          display.display();
-        #endif
         while (1) delay(10);
     }
 
  Serial.println("Initialisation du serveur web...");
 // Chargement des fichiers html / javascript / css / ico
   server.on("/",                HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
+  server.on("/index.html",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
   server.on("/simple.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/simple.html", "text/html");  });
   server.on("/index2.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index2.html", "text/html");  });
   server.on("/index3.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
@@ -108,8 +94,7 @@ void setup() {
   server.on("/highcharts.js",   HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/highcharts.js", "application/javascript");  });
   server.on("/accessibility.js",HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/accessibility.js", "application/javascript");  });
   server.on("/style3.css",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
-  server.onNotFound(                     [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.html", "text/html");  });
-
+  server.onNotFound(                      [](AsyncWebServerRequest *request) { request->send(LittleFS, "/404.html", "text/html");  });
 
 /*
 server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWebServerResponse *response = request->beginResponse(LittleFS, "/index3.html");
@@ -125,11 +110,20 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
     String humidity = String(sensor.readHumidity());
     String data = "{\"temperature\":" + temperature + ",\"pressure\":" + pressure + ",\"humidity\":" + humidity + "}";
     request->send(200, "application/json", data);
-    Serial.println(data);
+    //Serial.println(data);
     });
-
   
-  // Activer la compression Gzip
+  // Act        #ifdef OLED 
+        // display.setCursor(0,0);
+        if ( SCREEN_HEIGHT == 64 ){
+          display.setCursor(0,32);
+        }
+          display.print("Pas de capteur !\n");
+          display.print("SensorID :");
+          display.print(sensor.sensorID(),16);
+          display.display();
+        #endif
+iver la compression Gzip
   server.onRequestBody(onRequestBody);  
   // Démarre le serveur web
   server.begin();
@@ -137,7 +131,6 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
   digitalWrite(LED_BUILTIN, HIGH) ; // si ok on allume led integré
   
 }
-
 void loop() {
   // Nothing to do here
 }
