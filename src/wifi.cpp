@@ -5,6 +5,8 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
 #include <LittleFS.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 #define LED_BUILTIN 2
 // Replace with your network credentials
@@ -12,6 +14,12 @@
 const char *ssid = "meteostation";
 const char *password = "meteostation";
 */
+
+#define OLED
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 AsyncWebServer server(80);
 
 const char *hostname = "meteoesp32"; // Nom d'hôte pour mDNS
@@ -41,6 +49,18 @@ void setup() {
   unsigned status;
   Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT); digitalWrite(LED_BUILTIN, LOW);// led bleu OFF
+
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.print("Init OK !");
+  display.display();
 /*
   //ESP32 en mode "access point"
   WiFi.softAP(ssid, password);
@@ -83,6 +103,7 @@ void setup() {
   server.on("/",                HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
   server.on("/index.html",      HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index.html", "text/html");  });
   server.on("/simple.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/simple.html", "text/html");  });
+  server.on("/index1.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index1.html", "text/html");  });
   server.on("/index2.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index2.html", "text/html");  });
   server.on("/index3.html",     HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/index3.html", "text/html");  });
   server.on("/style.css",       HTTP_GET, [](AsyncWebServerRequest *request) { request->send(LittleFS, "/style.css", "text/css");  });
@@ -115,12 +136,20 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
   
         #ifdef OLED 
         // display.setCursor(0,0);
-        if ( SCREEN_HEIGHT == 64 ){
-          display.setCursor(0,32);
-        }
-          display.print("Pas de capteur !\n");
-          display.print("SensorID :");
-          display.print(sensor.sensorID(),16);
+        display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Temperature: ");
+  display.print(sensor.readTemperature());
+  display.println(" C");
+  display.print("Humidity: ");
+  display.print(sensor.readHumidity());
+  display.println(" %");
+  display.print("Pressure: ");
+  display.print(sensor.readPressure() / 100.0F);
+  display.println(" hPa");
+  display.display();
+
+
           display.display();
         #endif
 // Activer la compression Gzip
