@@ -141,10 +141,10 @@ server.on("/index3.html", HTTP_GET, [](AsyncWebServerRequest *request){  AsyncWe
   display.print("Temperature: ");
   display.print(sensor.readTemperature());
   display.println(" C");
-  display.print("Humidity: ");
+  display.print("Humiditee: ");
   display.print(sensor.readHumidity());
   display.println(" %");
-  display.print("Pressure: ");
+  display.print("Pression: ");
   display.print(sensor.readPressure() / 100.0F);
   display.println(" hPa");
   display.display();
